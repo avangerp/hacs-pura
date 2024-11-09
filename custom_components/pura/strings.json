@@ -31,8 +31,8 @@
         "name": "Fragrance",
         "state": {
           "off": "[%key:common::state::off%]",
-          "slot_1": "Slot 1",
-          "slot_2": "Slot 2"
+          "grapefruit": "Grapefruit",
+          "pumpkin_chai": "Pumpkin Chai"
         }
       },
       "intensity": {

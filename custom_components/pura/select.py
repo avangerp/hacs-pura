@@ -25,6 +25,26 @@ from .coordinator import PuraDataUpdateCoordinator
 from .entity import PuraEntity, has_fragrance
 from .helpers import get_device_id
 
+scent_dict = {"grapefruit": "Grapefruit",
+              "pumpkin_chai": "Pumpkin Chai"}
+
+def get_bay(option, data) -> int:
+    try:
+        if data["bay1"]["fragrance"]["name"] == option:
+            return 1
+        elif data["bay2"]["fragrance"]["name"] == option:
+            return 2
+        else:
+            return 0
+    except:
+        return 0
+
+def get_fragrance_key(bay, data) -> str:
+    for key, value in scent_dict.items():
+        if value == data[f"bay{bay}"]["fragrance"]["name"]:
+            return key
+
+
 INTENSITY_MAP = {"subtle": 3, "medium": 6, "strong": 10}
 
 SERVICE_START_TIMER = "start_timer"
@@ -84,13 +104,13 @@ SELECT_DESCRIPTIONS = (
     PuraSelectEntityDescription(
         key="fragrance",
         translation_key="fragrance",
-        current_fn=lambda data: "off" if (b := data["bay"]) == 0 else f"slot_{b}",
+        current_fn=lambda data: "off" if (b := data["bay"]) == 0 else get_fragrance_key(b, data),
         options_fn=lambda data: ["off"]
-        + [f"slot_{i}" for i in (1, 2) if has_fragrance(data, i)],
-        select_fn=lambda select, option: functools.partial(
+        + [key for key, value in scent_dict if get_bay(value, data) > 0],
+        select_fn=lambda select, option, data: functools.partial(
             select.coordinator.api.set_always_on,
             select._device_id,
-            bay=int(option.replace("slot_", "")),
+            bay=get_bay(option, data),
         ),
     ),
     PuraSelectEntityDescription(
