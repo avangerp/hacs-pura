@@ -106,7 +106,7 @@ SELECT_DESCRIPTIONS = (
         translation_key="fragrance",
         current_fn=lambda data: "off" if (b := data["bay"]) == 0 else get_fragrance_key(b, data),
         options_fn=lambda data: ["off"]
-        + [key for key, value in scent_dict if get_bay(value, data) > 0],
+        + [key for key, value in scent_dict.items() if get_bay(value, data) > 0],
         select_fn=lambda select, option, data: functools.partial(
             select.coordinator.api.set_always_on,
             select._device_id,
