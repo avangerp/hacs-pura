@@ -99,7 +99,7 @@ async def async_setup_entry(
 class PuraSelectEntityDescription(SelectEntityDescription):
     """Pura select entity description."""
 
-    current_fn: Callable[[dict], str]
+    current_fn: Callable[[dict, dict | None], str]
     options_fn: Callable[[dict], list[str]] | None = None
     select_fn: Callable[[PuraSelectEntity, dict | None, str], functools.partial[bool]]
 
@@ -108,20 +108,20 @@ SELECT_DESCRIPTIONS = (
     PuraSelectEntityDescription(
         key="fragrance",
         translation_key="fragrance",
-        current_fn=lambda data: "off" if (b := data["bay"]) == 0 else get_fragrance_key(b, data),
+        current_fn=lambda data, data2: "off" if (b := data["bay"]) == 0 else get_fragrance_key(b, data2),
         options_fn=lambda data: ["off"]
         + [key for key, value in scent_dict.items() if get_bay(value, data) > 0],
         select_fn=lambda select, data, option: functools.partial(
             select.coordinator.api.set_always_on,
             select._device_id,
-            bay=1,
+            bay=get_bay(option, data),
         ),
     ),
     PuraSelectEntityDescription(
         key="intensity",
         translation_key="intensity",
         entity_category=EntityCategory.CONFIG,
-        current_fn=lambda data: data["intensity"] or "off",
+        current_fn=lambda data, data2: data["intensity"] or "off",
         options=["off", "subtle", "medium", "strong"],
         select_fn=lambda select, data, option: functools.partial(
             select.coordinator.api.set_intensity,
@@ -143,7 +143,7 @@ class PuraSelectEntity(PuraEntity, SelectEntity):
     def current_option(self) -> str:
         """Return the selected entity option to represent the entity state."""
         print("intensity_data " + str(self._intensity_data))
-        return self.entity_description.current_fn(self._intensity_data)
+        return self.entity_description.current_fn(self._intensity_data, self.get_device())
 
     @property
     def options(self) -> list[str]:
