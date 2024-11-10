@@ -100,7 +100,7 @@ class PuraSelectEntityDescription(SelectEntityDescription):
 
     current_fn: Callable[[dict, dict | None], str]
     options_fn: Callable[[dict], list[str]] | None = None
-    select_fn: Callable[[PuraSelectEntity, dict | None, str], functools.partial[bool]]
+    select_fn: Callable[[PuraSelectEntity, int], functools.partial[bool]]
 
 
 SELECT_DESCRIPTIONS = (
@@ -110,10 +110,10 @@ SELECT_DESCRIPTIONS = (
         current_fn=lambda data, data2: "off" if (b := data["bay"]) == 0 else get_fragrance_key(b, data2),
         options_fn=lambda data: ["off"]
         + [key for key, value in scent_dict.items() if get_bay(value, data) > 0],
-        select_fn=lambda select, data, option: functools.partial(
+        select_fn=lambda select, bay: functools.partial(
             select.coordinator.api.set_always_on,
             select._device_id,
-            bay=get_bay(option, data),
+            bay=bay,
         ),
     ),
     PuraSelectEntityDescription(
@@ -158,11 +158,12 @@ class PuraSelectEntity(PuraEntity, SelectEntity):
         elif self.get_device()["controller"] == "away":
             raise PuraApiException(ERROR_AWAY_MODE)
         else:
-            job = self.entity_description.select_fn(self, self.get_device(), option)
-            # if not job.keywords["bay"]:
-            #     raise PuraApiException(
-            #         "No fragrance is currently active. Please select a fragrance before adjusting intensity."
-            #     )
+            bay = get_bay(option, self.get_device())
+            job = self.entity_description.select_fn(self, bay)
+            if not job.keywords["bay"]:
+                raise PuraApiException(
+                    "No fragrance is currently active. Please select a fragrance before adjusting intensity."
+                )
 
         if await self.hass.async_add_executor_job(job):
             await self.coordinator.async_request_refresh()
