@@ -43,7 +43,6 @@ def get_bay(option, data) -> int:
         return 0
 
 def get_fragrance_key(bay, data) -> str:
-    print("data " + str(data))
     for key, value in scent_dict.items():
         if value == data[f"bay{str(bay)}"]["fragrance"]["name"]:
             return key
@@ -160,10 +159,10 @@ class PuraSelectEntity(PuraEntity, SelectEntity):
             raise PuraApiException(ERROR_AWAY_MODE)
         else:
             job = self.entity_description.select_fn(self, self.get_device(), option)
-            if not job.keywords["bay"]:
-                raise PuraApiException(
-                    "No fragrance is currently active. Please select a fragrance before adjusting intensity."
-                )
+            # if not job.keywords["bay"]:
+            #     raise PuraApiException(
+            #         "No fragrance is currently active. Please select a fragrance before adjusting intensity."
+            #     )
 
         if await self.hass.async_add_executor_job(job):
             await self.coordinator.async_request_refresh()
