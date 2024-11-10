@@ -25,6 +25,9 @@ from .coordinator import PuraDataUpdateCoordinator
 from .entity import PuraEntity, has_fragrance
 from .helpers import get_device_id
 
+import logging
+_LOGGER = logging.getLogger(__name__)
+
 scent_dict = {"grapefruit": "Grapefruit",
               "pumpkin_chai": "Pumpkin Chai"}
 
@@ -40,6 +43,7 @@ def get_bay(option, data) -> int:
         return 0
 
 def get_fragrance_key(bay, data) -> str:
+    _LOGGER.debug("get_fragrance_key data" + str(data))
     for key, value in scent_dict.items():
         if value == data[f"bay{bay}"]["fragrance"]["name"]:
             return key
@@ -110,7 +114,7 @@ SELECT_DESCRIPTIONS = (
         select_fn=lambda select, data, option: functools.partial(
             select.coordinator.api.set_always_on,
             select._device_id,
-            bay=get_bay(option, data),
+            bay=1,
         ),
     ),
     PuraSelectEntityDescription(
@@ -154,9 +158,9 @@ class PuraSelectEntity(PuraEntity, SelectEntity):
         elif self.get_device()["controller"] == "away":
             raise PuraApiException(ERROR_AWAY_MODE)
         else:
-            print("starting job...")
+            _LOGGER.debug("starting job...")
             job = self.entity_description.select_fn(self, self.get_device(), option)
-            print("job" + str(job))
+            _LOGGER.debug("job... " + str(job))
             if not job.keywords["bay"]:
                 raise PuraApiException(
                     "No fragrance is currently active. Please select a fragrance before adjusting intensity."
