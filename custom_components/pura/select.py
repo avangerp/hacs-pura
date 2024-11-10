@@ -43,9 +43,9 @@ def get_bay(option, data) -> int:
         return 0
 
 def get_fragrance_key(bay, data) -> str:
-    _LOGGER.debug("get_fragrance_key data" + str(data))
+    print("data " + str(data))
     for key, value in scent_dict.items():
-        if value == data[f"bay{bay}"]["fragrance"]["name"]:
+        if value == data[f"bay{str(bay)}"]["fragrance"]["name"]:
             return key
 
 
@@ -142,6 +142,7 @@ class PuraSelectEntity(PuraEntity, SelectEntity):
     @property
     def current_option(self) -> str:
         """Return the selected entity option to represent the entity state."""
+        print("intensity_data " + str(self._intensity_data))
         return self.entity_description.current_fn(self._intensity_data)
 
     @property
@@ -158,9 +159,7 @@ class PuraSelectEntity(PuraEntity, SelectEntity):
         elif self.get_device()["controller"] == "away":
             raise PuraApiException(ERROR_AWAY_MODE)
         else:
-            _LOGGER.debug("starting job...")
             job = self.entity_description.select_fn(self, self.get_device(), option)
-            _LOGGER.debug("job... " + str(job))
             if not job.keywords["bay"]:
                 raise PuraApiException(
                     "No fragrance is currently active. Please select a fragrance before adjusting intensity."
