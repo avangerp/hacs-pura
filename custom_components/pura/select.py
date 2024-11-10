@@ -30,13 +30,19 @@ scent_dict = {"grapefruit": "Grapefruit",
 
 def get_bay(option, data) -> int:
     try:
+        print("option " + str(option))
+        print("data " + str(data))
+        print("finding bay")
         if data["bay1"]["fragrance"]["name"] == option:
+            print("bay 1!")
             return 1
         elif data["bay2"]["fragrance"]["name"] == option:
+            print("bay 2!")
             return 2
         else:
             return 0
     except:
+        print("get_bay error!")
         return 0
 
 def get_fragrance_key(bay, data) -> str:
