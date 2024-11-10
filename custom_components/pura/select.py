@@ -154,8 +154,9 @@ class PuraSelectEntity(PuraEntity, SelectEntity):
         elif self.get_device()["controller"] == "away":
             raise PuraApiException(ERROR_AWAY_MODE)
         else:
+            print("starting job...")
             job = self.entity_description.select_fn(self, self.get_device(), option)
-            print(job)
+            print("job" + str(job))
             if not job.keywords["bay"]:
                 raise PuraApiException(
                     "No fragrance is currently active. Please select a fragrance before adjusting intensity."
